@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SF系外惑星・宇宙文明名ジェネレーター</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes starfield {
+      from { background-position: 0 0, 0 0, 0 0; }
+      to   { background-position: -200px 200px, 150px -150px, -100px 300px; }
+    }
+    .star-bg {
+      background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 20%, rgba(255,255,255,0.5) 0%, transparent 100%);
+      background-size: 300px 300px, 400px 400px, 250px 250px;
+      animation: starfield 60s linear infinite;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeIn 0.5s ease-out; }
+    .select-styled {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+  </style>
+</head>
+<body class="star-bg bg-slate-950 min-h-screen font-sans text-gray-100">
+  <div class="max-w-2xl mx-auto px-4 py-8">
+    <header class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-cyan-300 mb-2">🌌 系外惑星・宇宙文明ジェネレーター</h1>
+      <p class="text-gray-400 text-sm">SF風の惑星名と文明設定を生成する</p>
+    </header>
+
+    <!-- Settings Panel -->
+    <section aria-label="惑星・文明設定" class="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 mb-6 backdrop-blur">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label for="selStar" class="block text-xs font-semibold text-gray-400 mb-1.5">恒星系タイプ</label>
+          <select id="selStar" class="select-styled w-full bg-slate-800 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400">
+            <option value="G">G型（太陽類似）</option>
+            <option value="K">K型（橙色矮星）</option>
+            <option value="M">M型（赤色矮星）</option>
+            <option value="F">F型（黄白色星）</option>
+            <option value="Binary">連星系</option>
+          </select>
+        </div>
+        <div>
+          <label for="selEnv" class="block text-xs font-semibold text-gray-400 mb-1.5">惑星環境</label>
+          <select id="selEnv" class="select-styled w-full bg-slate-800 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400">
+            <option value="岩石">岩石惑星</option>
+            <option value="ガス巨人">ガス巨人</option>
+            <option value="海洋">海洋惑星</option>
+            <option value="砂漠">砂漠惑星</option>
+            <option value="氷">氷惑星</option>
+            <option value="熱帯">熱帯惑星</option>
+            <option value="超地球型">超地球型</option>
+          </select>
+        </div>
+        <div>
+          <label for="selCiv" class="block text-xs font-semibold text-gray-400 mb-1.5">文明レベル</label>
+          <select id="selCiv" class="select-styled w-full bg-slate-800 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400">
+            <option value="原始">原始文明</option>
+            <option value="発展途上">発展途上</option>
+            <option value="宇宙進出前">宇宙進出前</option>
+            <option value="惑星間文明" selected>惑星間文明</option>
+            <option value="恒星間文明">恒星間文明</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="generateWorld()" id="generateBtn"
+          aria-label="惑星と文明を生成する"
+          class="flex-1 py-3 bg-cyan-700 hover:bg-cyan-600 active:scale-95 text-white font-bold rounded-xl shadow-lg transition-all focus:outline-none focus:ring-4 focus:ring-cyan-400">
+          🚀 生成する
+        </button>
+        <button onclick="randomizeAndGenerate()"
+          aria-label="ランダムで生成する"
+          class="px-4 py-3 bg-slate-700 hover:bg-slate-600 active:scale-95 text-white font-bold rounded-xl transition-all focus:outline-none focus:ring-4 focus:ring-slate-400">
+          🎲
+        </button>
+      </div>
+    </section>
+
+    <!-- Result Card -->
+    <div id="worldCard" class="hidden mb-8">
+      <div class="bg-slate-900/90 border border-cyan-900 rounded-2xl p-6 fade-in">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex-1 min-w-0">
+            <div id="catalogName" class="text-xs text-gray-500 font-mono mb-1"></div>
+            <h2 id="poeticName" class="text-2xl font-black text-cyan-200 mb-1"></h2>
+            <div id="civName" class="text-lg text-purple-300 font-semibold"></div>
+          </div>
+          <div class="flex gap-2 ml-3 shrink-0">
+            <button onclick="toggleSave()" id="saveBtn" aria-label="惑星設定を保存"
+              class="text-2xl transition-transform hover:scale-125 focus:outline-none focus:ring-2 focus:ring-cyan-400 rounded-full p-1">
+              🤍
+            </button>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div id="worldTags" class="flex flex-wrap gap-2 mb-4"></div>
+
+        <!-- Characteristics Grid -->
+        <div id="charGrid" class="grid grid-cols-2 gap-2 mb-4" aria-label="文明特性"></div>
+
+        <!-- Description -->
+        <p id="worldDesc" class="text-sm text-gray-200 leading-relaxed border-t border-slate-700 pt-4"></p>
+      </div>
+    </div>
+
+    <!-- Library -->
+    <section aria-label="保存済み惑星設定ライブラリー">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-semibold text-gray-400">📖 設定集ライブラリー</h2>
+        <div class="flex gap-3">
+          <button onclick="exportLibrary()" class="text-xs text-cyan-600 hover:text-cyan-400 underline" aria-label="設定集をテキストでエクスポート">エクスポート</button>
+          <button onclick="clearLibrary()" class="text-xs text-gray-600 hover:text-red-400 underline" aria-label="ライブラリーをクリア">クリア</button>
+        </div>
+      </div>
+      <ul id="libraryList" class="space-y-2 max-h-80 overflow-y-auto"></ul>
+      <p id="libraryEmpty" class="text-gray-600 text-xs italic">保存した惑星設定がありません</p>
+    </section>
+
+    <!-- Export Modal -->
+    <div id="exportModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+      <div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 w-full max-w-lg" role="dialog" aria-label="エクスポートテキスト">
+        <h3 class="font-bold text-white mb-3">エクスポートテキスト</h3>
+        <textarea id="exportText" readonly class="w-full h-64 bg-slate-900 text-gray-200 text-xs font-mono p-3 rounded-lg border border-slate-700 focus:outline-none resize-none"></textarea>
+        <div class="flex gap-3 mt-4">
+          <button onclick="copyExport()" class="flex-1 py-2 bg-cyan-700 hover:bg-cyan-600 text-white rounded-lg text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-cyan-400" aria-label="テキストをコピー">コピー</button>
+          <button onclick="closeExport()" class="flex-1 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-slate-400" aria-label="閉じる">閉じる</button>
+        </div>
+        <div id="exportCopied" class="hidden text-xs text-green-400 mt-2 text-center">✓ コピーしました</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Data Tables ──────────────────────────────────────────────
+    const CATALOG_PREFIXES = ['Kepler','Trappist','Gliese','HD','TOI','HIP','Ross','Wolf','LHS','GJ'];
+    const CATALOG_SUFFIXES = ['b','c','d','e','f'];
+
+    const POETIC_PARTS = {
+      岩石:   { adj: ['鉄の', '赤褐の', '砂塵の', '灰色の', '荒野の'], noun: ['荒星', '孤星', '大地', '岩礁', '砦'] },
+      ガス巨人: { adj: ['彩雲の', '嵐の', '渦巻く', '輝く', '大気の'], noun: ['巨人', '嵐界', '大渦', '気柱', '翠球'] },
+      海洋:   { adj: ['碧の', '深海の', '波濤の', '蒼穹の', '珊瑚の'], noun: ['孤星', '海洋', '碧界', '波間', '蒼穹'] },
+      砂漠:   { adj: ['灼熱の', '黄金の', '砂漠の', '乾の', '焦土の'], noun: ['荒星', '砂海', '炎地', '黄土', '砂丘'] },
+      氷:     { adj: ['永氷の', '銀白の', '凍原の', '霜の', '氷晶の'], noun: ['孤星', '氷界', '凍土', '白原', '雪球'] },
+      熱帯:   { adj: ['翠緑の', '密林の', '緑溢る', '花咲く', '生命の'], noun: ['楽園', '密林界', '翠星', '豊穣', '緑地'] },
+      超地球型: { adj: ['雄大な', '豊かな', '巨大な', '輝かしき', '聖なる'], noun: ['新世界', '大地', '聖星', '楽園', '至星'] }
+    };
+
+    const CIV_NAMES = {
+      原始:    ['の民', 'の一族', '族', '部族', '氏族'],
+      発展途上: ['連合', '王国', '共和国', '帝国', '連盟'],
+      宇宙進出前: ['共和連合', '惑星連邦', '惑星国家', '大帝国', '統一連盟'],
+      惑星間文明: ['星間連邦', '恒星共和国', '惑星同盟', '星系帝国', '宇宙連合'],
+      恒星間文明: ['恒星間帝国', '銀河連邦', '文明圏', '超文明体', '銀河統一体']
+    };
+
+    const CIV_LANG = ['表意文字系', '音素文字系', 'バイナリ記号系', '化学信号系', '電磁波記号系', '多次元記号系', '振動波言語', 'テレパシー型'];
+    const CIV_GOV  = ['部族制', '神権政治', '民主主義', '寡頭制', '帝政', '合議制', '人工知能統治', '分散自律型', '階層制', '連邦制'];
+    const CIV_TRAIT = [
+      '強力な磁場を利用したエネルギー技術を持つ',
+      '地下深くに都市を築き生活している',
+      '集合意識を持ち個の概念が希薄',
+      '光合成型の代謝機構を持つ',
+      '高度な量子通信網で惑星全体を繋ぐ',
+      'テラフォーミング技術で環境改変を続ける',
+      '自然との共生を最優先とする文化を持つ',
+      '機械と生体が融合したサイボーグ社会',
+      '長命種で1000年単位の計画を立案する',
+      '感情を持たない純粋論理存在として進化',
+      '異なる種族との共存を最優先とする',
+      '時間認識が地球と異なり過去から未来へ逆順',
+      '色覚が12種あり色彩言語が発達している',
+      '休眠サイクルを持ち冬眠中に高度な夢を見る'
+    ];
+
+    const POP_BY_CIV = {
+      原始:    () => `約${randInt(1,99)}万人`,
+      発展途上: () => `約${randInt(1,100)}億人`,
+      宇宙進出前: () => `約${randInt(100,999)}億人`,
+      惑星間文明: () => `約${randInt(1,50)}兆人（複数惑星）`,
+      恒星間文明: () => `約${randInt(50,500)}兆人（複数恒星系）`
+    };
+
+    const TECH_BY_CIV = {
+      原始:    '石器・農耕レベル',
+      発展途上: '電気・核エネルギー活用レベル',
+      宇宙進出前: '量子コンピューター・軌道上衛星運用レベル',
+      惑星間文明: '惑星間ワープ技術・テラフォーミング実用レベル',
+      恒星間文明: '恒星間航行・ダイソン球建造レベル'
+    };
+
+    const STAR_DESC = {
+      G:      '太陽に似た黄色矮星',
+      K:      '長寿命の橙色矮星',
+      M:      '宇宙で最も多い赤色矮星',
+      F:      '高エネルギーの黄白色星',
+      Binary: '互いを公転する二重恒星系'
+    };
+
+    // ── Generator ───────────────────────────────────────────────
+    let currentWorld = null;
+
+    function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    function buildCatalog() {
+      const pre = rand(CATALOG_PREFIXES);
+      const num = `${randInt(1,9999)}-${randInt(1,999)}`;
+      const suf = rand(CATALOG_SUFFIXES);
+      return `${pre}-${num}${suf}`;
+    }
+
+    function buildPoetic(env) {
+      const p = POETIC_PARTS[env];
+      return `「${rand(p.adj)}${rand(p.noun)}」`;
+    }
+
+    function buildCivName(catalog, civ) {
+      // Pick a prefix from the catalog number and add flavor
+      const syllables = ['ア','エ','イ','オ','ウ','カ','ケ','コ','サ','セ','ソ','タ','テ','ナ','ネ','ノ','ハ','ヘ','ホ','ラ','レ','ロ'];
+      const len = randInt(2, 4);
+      let name = '';
+      for (let i = 0; i < len; i++) name += rand(syllables);
+      return name + rand(CIV_NAMES[civ]);
+    }
+
+    function buildCharacteristics(star, env, civ) {
+      const chars = [
+        { label: '言語体系', value: rand(CIV_LANG) },
+        { label: '政治体制', value: rand(CIV_GOV) },
+        { label: '推定人口', value: POP_BY_CIV[civ]() },
+        { label: '技術水準', value: TECH_BY_CIV[civ] },
+        { label: '恒星環境', value: STAR_DESC[star] },
+        { label: '惑星環境', value: env + '惑星' },
+      ];
+      // Add 1-2 unique traits
+      const traits = [...CIV_TRAIT].sort(() => Math.random() - 0.5).slice(0, 2);
+      chars.push({ label: '特記事項1', value: traits[0] });
+      chars.push({ label: '特記事項2', value: traits[1] });
+      return chars;
+    }
+
+    function buildDescription(catalog, poetic, civName, star, env, civ, chars) {
+      const starDesc = STAR_DESC[star];
+      const civDesc = {
+        原始: 'はまだ文明の黎明期にある',
+        発展途上: 'は産業革命を経て急速に発展している',
+        宇宙進出前: 'は宇宙への扉を開こうとしている',
+        惑星間文明: 'は複数の惑星に文明圏を広げている',
+        恒星間文明: 'は恒星間空間を縦横無尽に行き来する'
+      };
+      return `${catalog}${poetic}は${starDesc}の周囲${randInt(1,10) * 0.1 + 0.1}天文単位を公転する${env}惑星である。この星に栄える${civName}${civDesc[civ]}。${chars[6].value}という独自の特性を持ち、銀河史において特筆すべき存在として知られる。`;
+    }
+
+    function generateWorld() {
+      const star = document.getElementById('selStar').value;
+      const env  = document.getElementById('selEnv').value;
+      const civ  = document.getElementById('selCiv').value;
+
+      const catalog  = buildCatalog();
+      const poetic   = buildPoetic(env);
+      const civName  = buildCivName(catalog, civ);
+      const chars    = buildCharacteristics(star, env, civ);
+      const desc     = buildDescription(catalog, poetic, civName, star, env, civ, chars);
+
+      currentWorld = { catalog, poetic, civName, star, env, civ, chars, desc, id: Date.now() };
+
+      // Render
+      document.getElementById('worldCard').classList.remove('hidden');
+      document.getElementById('catalogName').textContent = catalog;
+      document.getElementById('poeticName').textContent = poetic;
+      document.getElementById('civName').textContent = civName;
+      document.getElementById('worldDesc').textContent = desc;
+
+      // Tags
+      const tags = document.getElementById('worldTags');
+      tags.innerHTML = '';
+      const tagData = [
+        { label: star + '型', cls: 'bg-yellow-900/50 text-yellow-300 border-yellow-700' },
+        { label: env, cls: 'bg-cyan-900/50 text-cyan-300 border-cyan-700' },
+        { label: civ, cls: 'bg-purple-900/50 text-purple-300 border-purple-700' }
+      ];
+      tagData.forEach(t => {
+        const span = document.createElement('span');
+        span.className = `text-xs px-2.5 py-0.5 rounded-full border ${t.cls}`;
+        span.textContent = t.label;
+        tags.appendChild(span);
+      });
+
+      // Characteristics Grid
+      const grid = document.getElementById('charGrid');
+      grid.innerHTML = '';
+      chars.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'bg-slate-800/60 rounded-lg px-3 py-2';
+        div.innerHTML = `<div class="text-xs text-gray-500 mb-0.5">${c.label /* xss-ok: buildCharacteristics()のハードコードlabelラベル文字列 */}</div><div class="text-sm text-gray-200">${c.value /* xss-ok: ハードコードCIV_LANG/CIV_GOV/TECH_BY_CIV等の配列・マップ値 */}</div>`;
+        grid.appendChild(div);
+      });
+
+      updateSaveBtn();
+
+      const inner = document.querySelector('#worldCard > div');
+      inner.classList.remove('fade-in');
+      void inner.offsetWidth;
+      inner.classList.add('fade-in');
+    }
+
+    function randomizeAndGenerate() {
+      const stars = ['G','K','M','F','Binary'];
+      const envs  = ['岩石','ガス巨人','海洋','砂漠','氷','熱帯','超地球型'];
+      const civs  = ['原始','発展途上','宇宙進出前','惑星間文明','恒星間文明'];
+      document.getElementById('selStar').value = rand(stars);
+      document.getElementById('selEnv').value  = rand(envs);
+      document.getElementById('selCiv').value  = rand(civs);
+      generateWorld();
+    }
+
+    function toggleSave() {
+      if (!currentWorld) return;
+      let lib = JSON.parse(localStorage.getItem('planet_library') || '[]');
+      const idx = lib.findIndex(w => w.id === currentWorld.id);
+      if (idx >= 0) lib.splice(idx, 1);
+      else { lib.unshift(currentWorld); if (lib.length > 30) lib = lib.slice(0,30); }
+      localStorage.setItem('planet_library', JSON.stringify(lib));
+      updateSaveBtn();
+      renderLibrary();
+    }
+
+    function updateSaveBtn() {
+      const lib = JSON.parse(localStorage.getItem('planet_library') || '[]');
+      const isSaved = currentWorld && lib.some(w => w.id === currentWorld.id);
+      const btn = document.getElementById('saveBtn');
+      if (btn) {
+        btn.textContent = isSaved ? '❤️' : '🤍';
+        btn.setAttribute('aria-label', isSaved ? 'ライブラリーから削除' : '惑星設定を保存');
+      }
+    }
+
+    function renderLibrary() {
+      const lib = JSON.parse(localStorage.getItem('planet_library') || '[]');
+      const list = document.getElementById('libraryList');
+      const empty = document.getElementById('libraryEmpty');
+      list.innerHTML = '';
+      if (lib.length === 0) { empty.style.display = ''; return; }
+      empty.style.display = 'none';
+      lib.forEach((w, idx) => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center gap-3 bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-2.5 text-sm';
+        li.innerHTML = `
+          <div class="flex-1 min-w-0">
+            <div class="text-xs text-gray-500 font-mono">${w.catalog /* xss-ok: buildCatalog()がCATALOG_PREFIXESハードコード配列+randInt()整数から生成 */}</div>
+            <div class="font-bold text-cyan-200 truncate">${w.poetic /* xss-ok: buildPoetic()がPOETIC_PARTSハードコード配列から生成 */}</div>
+            <div class="text-xs text-purple-300">${w.civName /* xss-ok: buildCivName()がハードコードsyllables配列+CIV_NAMESハードコードマップから生成 */}</div>
+          </div>
+          <div class="text-right shrink-0 text-xs text-gray-500">
+            <div>${w.star /* xss-ok: selectオプション固定値（G/K/M/F/Binary） */}型</div>
+            <div>${w.env /* xss-ok: selectオプション固定値（岩石/ガス巨人等） */}</div>
+            <div>${w.civ /* xss-ok: selectオプション固定値（原始/発展途上等） */}</div>
+          </div>
+          <button onclick="removeFromLibrary(${idx /* xss-ok: 整数ループカウンタ */})" aria-label="削除" class="text-gray-600 hover:text-red-400 text-lg ml-1">×</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function removeFromLibrary(idx) {
+      let lib = JSON.parse(localStorage.getItem('planet_library') || '[]');
+      lib.splice(idx, 1);
+      localStorage.setItem('planet_library', JSON.stringify(lib));
+      renderLibrary();
+      if (currentWorld) updateSaveBtn();
+    }
+
+    function clearLibrary() {
+      if (!confirm('ライブラリーをすべて削除しますか？')) return;
+      localStorage.removeItem('planet_library');
+      renderLibrary();
+      if (currentWorld) updateSaveBtn();
+    }
+
+    function exportLibrary() {
+      const lib = JSON.parse(localStorage.getItem('planet_library') || '[]');
+      if (lib.length === 0) { alert('保存済みの惑星設定がありません'); return; }
+      let text = '=== 系外惑星・宇宙文明 設定集 ===\n\n';
+      lib.forEach((w, i) => {
+        text += `── ${i+1}. ${w.catalog} ${w.poetic} ──\n`;
+        text += `文明名: ${w.civName}\n`;
+        text += `恒星系: ${w.star}型 / 惑星環境: ${w.env} / 文明レベル: ${w.civ}\n`;
+        w.chars.forEach(c => { text += `${c.label}: ${c.value}\n`; });
+        text += `\n概要: ${w.desc}\n\n`;
+      });
+      document.getElementById('exportText').value = text;
+      document.getElementById('exportModal').classList.remove('hidden');
+    }
+
+    function copyExport() {
+      const ta = document.getElementById('exportText');
+      navigator.clipboard.writeText(ta.value).catch(() => {
+        ta.select(); document.execCommand('copy');
+      });
+      const msg = document.getElementById('exportCopied');
+      msg.classList.remove('hidden');
+      setTimeout(() => msg.classList.add('hidden'), 2000);
+    }
+
+    function closeExport() {
+      document.getElementById('exportModal').classList.add('hidden');
+    }
+
+    document.getElementById('exportModal').addEventListener('click', function(e) {
+      if (e.target === this) closeExport();
+    });
+
+    renderLibrary();
+  </script>
+</body>
+</html>
